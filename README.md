@@ -1,2 +1,0 @@
-# DeepLearning-Lab
-in practice
