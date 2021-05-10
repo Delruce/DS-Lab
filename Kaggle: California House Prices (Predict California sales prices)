@@ -1,0 +1,54 @@
+# RMSLE: (Private) 0.25977; (Public) 0.27377
+
+# Ranking: 105th of 172
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Preprocessing
+import pandas as pd
+data1 = pd.read_csv('train.csv')
+data1 = data1.dropna()
+data2 = pd.read_csv('test.csv')
+data2 = data2.fillna('0')
+
+# Catboost
+from catboost import CatBoostRegressor
+from sklearn.model_selection import train_test_split
+
+y = data1[['Sold Price']]
+
+X = data1.drop(columns = ['Sold Price'])
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+model_cb = CatBoostRegressor(
+    cat_features=['Address', 'Summary', 'Type', 'Heating', 'Cooling', 'Parking', 'Bedrooms',
+                  'Region', 'Elementary School', 'Middle School', 'High School', 'Flooring',
+                  'Heating features', 'Cooling features', 'Appliances included', 'Laundry features',
+                  'Parking features', 'Listed On', 'Last Sold On', 'City', 'State']
+    learning_rate = 0.1,
+    iterations = 500,
+    depth = 10
+)
+
+model_cb.fit(
+    X_train,
+    y_train,
+)
+
+y_pred = model_cb.predict(data2)
+
+print(y_pred)
+y_pred.shape
+
+# Write it down
+id = data2[['Id']]
+id2 = [id.iloc[i][0] for i in range(31626)]
+
+import os
+
+file = 'result.csv'
+with open(file, 'w') as f:
+    f.write('Id, Sold Price\n')
+    for i in range(31626):
+        f.write(str(id2[i])+','+str(y_pred[i])+'\n')
