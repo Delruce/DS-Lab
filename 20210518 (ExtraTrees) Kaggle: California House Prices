@@ -1,0 +1,40 @@
+# RMSLE: 0.16295
+
+# Preprocessing
+
+import pandas as pd
+
+data1 = pd.read_csv("train.csv")
+data1 = data1.dropna()
+data1 = data1.drop(columns=['Last Sold On'])
+
+data2 = pd.read_csv('test.csv')
+data2 = data2.fillna('0')
+
+# Extra Trees
+
+from pycaret.regression import *
+
+exp_name = setup(data=data1, target='Sold Price')
+
+et = create_model('et')
+
+pred_holdout = predict_model(et, data = data2)
+
+print(pred_holdout)
+
+# Write solution down
+
+id = pred_holdout[['Id']]
+id2 = [id.loc[i][0] for i in range(31626)]
+
+label = pred_holdout[['Label']]
+label2 = [label.loc[i][0] for i in range(31626)]
+
+import os
+
+file = 'result.csv'
+with open(file, 'w') as f:
+    f.write('Id,Sold Price\n')
+    for i in range(31626):
+        f.write(str(id2[i])+','+str(label2[i])+'\n')
