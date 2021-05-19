@@ -1,6 +1,0 @@
-Pipeline of ML:
-0. Get data (20%)
-1. Feature Preprocessing (60%)
-2. Test Models (5%)
-3. Tune hyperparameters (15%)
-4. Write down results
