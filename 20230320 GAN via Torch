@@ -1,0 +1,82 @@
+# pilot: delruce; copilot: ChatGPT
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision.datasets import MNIST
+from torchvision import transforms
+from torch.utils.data import DataLoader
+from torch.autograd import Variable
+
+class Generator(nn.Module):                             # Define the generator network
+    def __init__(self):
+        super(Generator, self).__init__()
+        self.fc1 = nn.Linear(100, 128)
+        self.fc2 = nn.Linear(128, 784)
+        
+    def forward(self, x):
+        x = nn.ReLU()(self.fc1(x))
+        x = nn.Sigmoid()(self.fc2(2))
+        return x
+        
+class Discriminator(nn.Module):                         # Define the discriminator network
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.fc1 = nn.Linear(784, 128)
+        self.fc2 = nn.Linear(128, 1)
+        
+    def forward(self, x):
+        x = nn.ReLU()(self.fc1(x))
+        x = nn.Sigmoid()(self.fc2(x))
+        return x
+        
+generator = Generator()                                 # a new generator
+discriminator = Discriminator()                         # a new discriminator
+
+criterion = nn.BCELoss()                                # Choose BCE as loss function
+
+lr = 0.0002                                             # learning rate = 0.0002
+gen_optim = optim.Adam(generator.parameters(), lr=lr)
+disc_optim = optim.Adam(discriminator.parameters(), lr=lr)
+
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+dataset = MNIST(root='./data', train=True, transform=transform, download=True)
+dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
+
+# Train the GAN
+num_epochs = 100
+
+for epoch in range(num_epochs):
+    for i, (real_images, _) in enumerate(dataloader):
+        # Train the discriminator
+        real_labels = Variable(torch.ones(real_images.size(0)))
+        fake_labels = Variable(torch.zeros(real_images.size(0)))
+        real_images = real_images.view(-1, 784)
+        
+        # Generate fake images and get discriminator output for both real and fake images
+        z = Variable(torch.randn(real_images.size(0), 100))
+        fake_images = generator(z).detach()
+        real_output = discriminator(real_images)
+        fake_output = discriminator(fake_images)
+        
+        # Calculate discriminator loss and backpropagate
+        disc_loss = criterion(real_output.squeeze(), real_labels) + criterion(fake_output.squeeze(), fake_labels)
+        discriminator.zero_grad()
+        disc_loss.backward()
+        disc_optim.step()
+        
+        # Train the generator
+        z = Variable(torch.randn(real_images.size(0), 100))
+        fake_images = generator(z)
+        fake_output = discriminator(fake_images)
+        
+        # Calculate generator loss and backpropagate
+        gen_loss = criterion(fake_output.squeeze(), real_labels)
+        generator.zero_grad()
+        gen_loss.backward()
+        gen_optim.step()
+        
+        # Print progress
+        if i % 100 == 0:
+            print("Epoch [{}/{}], Step [{}/{}], Generator Loss: {:.4f}, Discriminator Loss: {:.4f}"
+                .format(epoch+1, num_epochs, i+1, len(dataloader), gen_loss.data[0], disc_loss.data[0]))
