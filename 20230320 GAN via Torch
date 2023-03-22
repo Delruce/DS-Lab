@@ -1,4 +1,4 @@
-# pilot: delruce; copilot: ChatGPT
+# copilot: ChatGPT
 
 import torch
 import torch.nn as nn
