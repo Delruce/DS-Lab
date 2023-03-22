@@ -9,7 +9,14 @@ iris = load_iris               # use sklearn default dataset iris
 
 X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size=0.3, random_state=42)
                                                                             # train_size : test_size = 7:3
-xgb = XGBClassifier(objective='multi:softmax', num_class=3, seed=42)
+
+# pre-define gpu-related parameters for model class
+params = {
+    "tree_method": "gpu_hist",
+    "gpu_id": 0
+}
+
+xgb = XGBClassifier(**params, objective='multi:softmax', num_class=3, seed=42)
                                                # 3 class labels
 xgb.fit(X_train, y_train)                   # train the xgb model
 y_pred = xgb.predict(X_test)                # use the trained model
