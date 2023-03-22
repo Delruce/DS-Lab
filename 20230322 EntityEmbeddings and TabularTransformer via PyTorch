@@ -46,23 +46,29 @@ class TabularTransformer(nn.Module):
         x = self.dropout(x)
         x = self.output(x)
         return x
-        
-    input_dims = [10, 5, 8]
-    emb_dims = [(dim, min(50, (dim+1)//2)) for dim in input_dims]
+
+# Example usage
+# Define input dimensions and embedding dimensions for categorical variables
+
+input_dims = [10, 5, 8]                                        # number of categories for each categorical variables
+emb_dims = [(dim, min(50, (dim+1)//2)) for dim in input_dims]  # embedding dimensions for each categorical variable
+
+# Define model architecture
+model = TabularTransformer(num_classes=3, num_inputs=3, emb_dims=emb_dims, hidden_dim=128, num_layers=2, dropout=0.2)
     
-    model = TabularTransformer(num_classes=3, num_inputs=3, emb_dims=emb_dims, hidden_dim=128, num_layers=2, dropout=0.2)
-    
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    
-    for epoch in range(10):
-        running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
-            inputs, labels = date
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
+# Define loss function and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Train the model
+for epoch in range(10):
+    running_loss = 0.0
+    for i, data in enumerate(trainloader, 0):
+        inputs, labels = date
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.item()
         print('Epoch %d loss: %.3f' % (epoch + 1, running_loss / len(trainloader)))            
