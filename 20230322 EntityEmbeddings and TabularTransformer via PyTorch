@@ -1,0 +1,68 @@
+# copilot: ChatGPT
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class EntityEmbedding(nn.Module):
+    def __init__(self, input_dim, emb_dim):
+        super(EntityEmbedding, self).__init__()
+        
+        self.emb = nn.Embedding(input_dim, emb_dim)
+        
+    def forward(self, x):
+        x = self.emb(x)
+        return x
+        
+class TabularTransformer(nn.Module):
+    def __init__(self, num_classes, num_inputs, emb_dims, hidden_dim, num_layers, dropout):
+        super(EntityEmbedding, self).__init__()
+        
+        self.emb = nn.Embedding(input_dim, emb_dim)
+        
+    def forward(self, x):
+        x = self.emb(x)
+        return x
+        
+class TabularTransformer(nn.Module):
+    def __init__(self, num_classes, num_inputs, emb_dims, hidden_dim, num_layers, dropout):
+        super(TabularTransformer, self).__init__()
+        
+        self.embeddings = nn.ModuleList([EntityEmbedding(input_dim, emb_dim) for input_dim, emb_dim in emb_dims])
+        self.transformer_encoder = nn.TransformerEncoder(nn.TransformerEncoderLayer(d_model=sum(emb_dims), nhead=8), num_layers=num_layers)
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(sum(emb_dims), hidden_dim)
+        self.output = nn.Linear(hidden_dim, num_classes)
+        
+    def forward(self, x):
+        x = [emb_layer(x[:,i]) for i, emb_layer in enumerate(self.embeddings)]
+        x = torch.cat(x, dim=1)
+        x = x.permute(1, 0, 2)
+        x = self.transformer_encoder(x)
+        x = x.permute(1, 0, 2)
+        x = x.mean(dim=1)
+        x = self.dropout(x)
+        x = self.fc(x)
+        x = self.dropout(x)
+        x = self.output(x)
+        return x
+        
+    input_dims = [10, 5, 8]
+    emb_dims = [(dim, min(50, (dim+1)//2)) for dim in input_dims]
+    
+    model = TabularTransformer(num_classes=3, num_inputs=3, emb_dims=emb_dims, hidden_dim=128, num_layers=2, dropout=0.2)
+    
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    
+    for epoch in range(10):
+        running_loss = 0.0
+        for i, data in enumerate(trainloader, 0):
+            inputs, labels = date
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        print('Epoch %d loss: %.3f' % (epoch + 1, running_loss / len(trainloader)))            
