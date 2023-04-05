@@ -1,0 +1,46 @@
+# keras from tensorflow
+import tensorflow as tf
+from tf import keras
+
+# layers from keras
+from keras import layers
+
+# keras-support input
+input_img = keras.Input(shape=(784, ))
+
+# functional programming
+
+# 3 fc layers as encoder
+o1 = layers.Dense(128, activation='relu')(input_img)
+o2 = layers.Dense(64, activation='relu')(o1)
+o3 = layers.Dense(32, activation='relu')(o2)
+
+# 3 fc layers as decoder
+o4 = layers.Dense(64, activation='relu')(o3)
+o5 = layers.Dense(128, activation='relu')(o4)
+o6 = layers.Dense(784, activation='softmax')(o5)
+
+# setup model with input and output
+autoencoder = keras.Model(input_img, o6)
+
+# show model info
+autoencoder.summary()
+
+# make selection of compile parameters
+autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
+# adam; MSE
+
+# train it
+# my favorite part
+autoencoder.fit(x_test.reshape((len(x_test),
+                np.prod(x_test.shape[1:]))),
+                x_test.reshape((len(x_test),
+                np.prod(x_test.shape[1:]))),
+                epochs=200,
+                batch_size=256)
+                
+# also define the encoder part
+encoder = keras.Model(input_img, o3)
+
+# show me the weights
+encoder.get_weights()
